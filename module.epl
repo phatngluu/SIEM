@@ -1,0 +1,21 @@
+// Declare the name for the module (optional).
+module SIEM.sshlog;
+
+// Declare other module(s) that this module depends on (optional).
+// This can be used to resolve name conflicts.
+
+// Import any Java/.NET classes of the given package name (optional). 
+// Imports only handle classpath and do not import other modules.
+import SIEM.event.*;
+
+// Declare an event type based on a Java class in the package that was imported as above
+create schema SSHLogMessage as SSHLogMessage;
+create schema SSHFailedLogMessage as SSHFailedLogMessage;
+
+// Sample statement
+@Name('ssh-log-message')
+select message, epochTimestamp from SSHLogMessage
+
+// Sample statement
+@Name('ssh-failed-log-message')
+select senderIpAddr, port, date from SSHFailedLogMessage
