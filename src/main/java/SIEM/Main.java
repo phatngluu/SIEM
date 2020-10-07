@@ -1,28 +1,29 @@
 package SIEM;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Scanner;
 import com.espertech.esper.runtime.client.EPRuntime;
 import org.json.JSONException;
 import org.json.JSONObject;
-import SIEM.event.SSHLogMessage;
-import SIEM.util.MyInitializer;
 
-/**
- * Hello world!
- *
- */
+import SIEM.core.CoreCompiler;
+import SIEM.core.CoreRuntime;
+import SIEM.event.SSHAlert;
+import SIEM.event.SSHFailedLogMessage;
+import SIEM.event.SSHLogMessage;
+
 public class Main {
     public static void main(String[] args) {
-        // EPRuntime runtime2 = new MyInitializer2().init();
-        MyInitializer myInitializer = new MyInitializer();
-        // myInitializer.setRuntime2(runtime2);
-        EPRuntime runtime = myInitializer.init();
+        // Setting up compiler
+        CoreCompiler coreCompiler = new CoreCompiler();
+        coreCompiler.compile("@name('ssh-log-message') select message, epochTimestamp from SSHLogMessage", SSHLogMessage.class);
+        coreCompiler.compile("@name('ssh-failed-log-message') select senderIpAddr, port, date from SSHFailedLogMessage", SSHFailedLogMessage.class);
+        coreCompiler.compile("@name('ssh-alert') select alertMessage from SSHAlert", SSHAlert.class);
+        
+        // Setting up run time
+        CoreRuntime coreRuntime = new CoreRuntime(coreCompiler);
+        EPRuntime runtime = coreRuntime.getEPRuntime();
 
         ProcessBuilder builder = new ProcessBuilder("bash", "-c", "journalctl -u ssh.service -o json");
         builder.redirectErrorStream(true);

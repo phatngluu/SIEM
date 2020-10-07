@@ -14,11 +14,9 @@ import SIEM.util.*;
 public class CoreCompiler {
     private HashMap<Class, EPCompiled> epCompiledMap;
     private Configuration configuration;
-    private CompilerArguments compilerArguments;
 
     public CoreCompiler() {
         epCompiledMap = new HashMap<Class, EPCompiled>();
-        compilerArguments = Common.getCompilerArguments();
         configuration = Common.getConfiguration();
     }
 
@@ -28,7 +26,7 @@ public class CoreCompiler {
         configuration = Common.getConfiguration();
         configuration.getCommon().addEventType(eventType);
         // Common.updateConfiguration(configuration);
-        compilerArguments = new CompilerArguments(configuration);
+        CompilerArguments compilerArguments = new CompilerArguments(configuration);
 
         // Compile
         EPCompiler compiler = EPCompilerProvider.getCompiler();
@@ -45,5 +43,9 @@ public class CoreCompiler {
 
     public EPCompiled getEpCompiled(Class eventType) {
         return epCompiledMap.get(eventType);
+    }
+
+    public HashMap<Class, EPCompiled> getEpCompiledMap(){
+        return epCompiledMap;
     }
 }
