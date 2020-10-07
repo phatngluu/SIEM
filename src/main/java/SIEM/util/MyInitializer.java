@@ -29,21 +29,45 @@ public class MyInitializer {
     private EPCompiled epCompiled1;
     private EPCompiled epCompiled2;
     // Get config
-    Configuration configuration = new Configuration();
+    Configuration configuration;
+    CompilerArguments compilerArguments;
 
     public EPRuntime init() {
         // configuration.getCommon().addEventType(SSHLogMessage.class);
         // configuration.getCommon().addEventType(SSHFailedLogMessage.class);
         // configuration.getCommon().addEventType(SSHAlert.class);
 
-        initCompiler();
-        // initCompiler2();
-        // configuration = Common.getConfiguration();
+        // configuration.getCommon().addEventType(SSHLogMessage.class);
+        // configuration.getCommon().addEventType(SSHFailedLogMessage.class);
+        // configuration.getCommon().addEventType(SSHAlert.class);
+        // initCompiler();
+        initCompiler2();
+        configuration = Common.getConfiguration();
+        // epCompiled = compile("@name('ssh-log-message') select message, epochTimestamp from SSHLogMessage", SSHLogMessage.class);
+        // epCompiled1 = compile("@name('ssh-failed-log-message') select senderIpAddr, port, date from SSHFailedLogMessage", SSHFailedLogMessage.class);
+        // epCompiled2 = compile("@name('ssh-alert') select alertMessage from SSHAlert", SSHAlert.class);
         if (epCompiled != null && epCompiled1 != null && epCompiled2 != null) {
             return initRuntime();
         }
         return null;
     }
+
+    private EPCompiled compile(String epl, Class eventType) {
+        System.out.println("Compiling...");
+        configuration.getCommon().addEventType(eventType);
+        compilerArguments = new CompilerArguments(configuration);
+
+        EPCompiler compiler = EPCompilerProvider.getCompiler();
+        try {
+            EPCompiled epCompiled = compiler.compile(epl, compilerArguments);
+            //epCompiledMap.put(eventType, epCompiled);
+            return epCompiled;
+        } catch (EPCompileException ex) {
+            // handle exception here
+            throw new RuntimeException(ex);
+        }
+    }
+
 
     private void initCompiler2() {
         CoreCompiler coreCompiler = new CoreCompiler();
@@ -51,9 +75,9 @@ public class MyInitializer {
         coreCompiler.compile("@name('ssh-failed-log-message') select senderIpAddr, port, date from SSHFailedLogMessage", SSHFailedLogMessage.class);
         coreCompiler.compile("@name('ssh-alert') select alertMessage from SSHAlert", SSHAlert.class);
 
-        epCompiled = coreCompiler.getEpCompiledMap().get(SSHLogMessage.class);
-        epCompiled1 = coreCompiler.getEpCompiledMap().get(SSHFailedLogMessage.class);
-        epCompiled2 = coreCompiler.getEpCompiledMap().get(SSHAlert.class);
+        epCompiled = coreCompiler.getEpCompiled(SSHLogMessage.class);
+        epCompiled1 = coreCompiler.getEpCompiled(SSHFailedLogMessage.class);
+        epCompiled2 = coreCompiler.getEpCompiled(SSHAlert.class);
     }
 
     private void initCompiler() {
@@ -106,17 +130,17 @@ public class MyInitializer {
             }
         }
         
-        private EPRuntime initRuntime() {
+    private EPRuntime initRuntime() {
             
-            // Set up runtime
+        // Set up runtime
         EPRuntime runtime = EPRuntimeProvider.getDefaultRuntime(configuration);
         EPDeployment deployment;
         EPDeployment deployment1;
-        // EPDeployment deployment2;
+        EPDeployment deployment2;
         try {
             deployment = runtime.getDeploymentService().deploy(epCompiled);
             deployment1 = runtime.getDeploymentService().deploy(epCompiled1);
-            // deployment2 = runtime.getDeploymentService().deploy(epCompiled2);
+            deployment2 = runtime.getDeploymentService().deploy(epCompiled2);
         } catch (EPDeployException ex) {
             // handle exception here
             throw new RuntimeException(ex);
@@ -132,8 +156,6 @@ public class MyInitializer {
             // System.out.println("SSHLogMessage | Epoch: " + message + " - Message: " + message);
 
             // Select failed message and send event
-            // Failed password for steven from 172.16.96.1 port 51089 ssh2
-            // Accepted password for steven from 172.16.96.1 port 51079 ssh2
             if (message.matches("Failed password for (.*) from (.*).(.*).(.*).(.*) port (.*) ssh2")) {
                 String[] slices = message.split(" ");
                 String senderIpAddr = slices[5];
@@ -166,15 +188,15 @@ public class MyInitializer {
                         "SSHAlert");
         });
 
-        // // Set up statement SSHAlert
-        // EPStatement statement2 = runtime.getDeploymentService().getStatement(deployment2.getDeploymentId(),
-        //         "ssh-alert");
-        // statement2.addListener((newData, oldData, stmt, rt) -> {
-        //     // Print alert message
-        //     System.out.println("------------------------------------");
-        //     System.out.println("SSH Alert - Failed more than " + MAX_FAILED + " times");
-        //     System.out.println("------------------------------------");
-        // });
+        // Set up statement SSHAlert
+        EPStatement statement2 = runtime.getDeploymentService().getStatement(deployment2.getDeploymentId(),
+                "ssh-alert");
+        statement2.addListener((newData, oldData, stmt, rt) -> {
+            // Print alert message
+            System.out.println("------------------------------------");
+            System.out.println("SSH Alert - Failed more than " + MAX_FAILED + " times");
+            System.out.println("------------------------------------");
+        });
 
         return runtime;
     }

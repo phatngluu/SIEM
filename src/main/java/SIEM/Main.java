@@ -49,40 +49,5 @@ public class Main {
             System.err.println("Cannot execute bash command.");
             e1.printStackTrace();
         }
-
-        // File f = new File("sshlog.json");
-
-        // try {
-        // Scanner scanner = new Scanner(f);
-        // ArrayList<String> logs = new ArrayList<String>();
-
-        // while (scanner.hasNextLine()) {
-        // logs.add(scanner.nextLine());
-        // }
-        // scanner.close();
-
-        // if (!logs.isEmpty()) {
-        // for (int i = logs.size() - 1; i >= 0; i--) {
-        // try {
-        // JSONObject logObj = new JSONObject(logs.get(i));
-        // String logMsg = logObj.getString("MESSAGE");
-        // String epochtime = logObj.getString("__REALTIME_TIMESTAMP");
-
-        // // Send event
-        // runtime.getEventService().sendEventBean(new SSHLogMessage(logMsg, epochtime),
-        // "SSHLogMessage");
-        // } catch (JSONException e) {
-        // e.printStackTrace();
-        // }
-
-        // }
-
-        // }
-
-        // } catch (FileNotFoundException e) {
-        // e.printStackTrace();
-        // }
-
-        // EPCompiler epCompiler = new EPCompilerImpl();
     }
 }
