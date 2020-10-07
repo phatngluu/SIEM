@@ -3,14 +3,8 @@ package SIEM.core;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
 
-import com.espertech.esper.common.client.EPCompiled;
 import com.espertech.esper.common.client.configuration.Configuration;
-import com.espertech.esper.compiler.client.CompilerArguments;
-import com.espertech.esper.compiler.client.EPCompileException;
-import com.espertech.esper.compiler.client.EPCompiler;
-import com.espertech.esper.compiler.client.EPCompilerProvider;
 import com.espertech.esper.runtime.client.EPDeployException;
 import com.espertech.esper.runtime.client.EPDeployment;
 import com.espertech.esper.runtime.client.EPRuntime;
@@ -21,19 +15,15 @@ import SIEM.event.SSHAlert;
 import SIEM.event.SSHFailedLogMessage;
 import SIEM.event.SSHLogMessage;
 import SIEM.util.Common;
-import SIEM.core.*;
 
 public class CoreRuntime {
     private final CoreCompiler coreCompiler;
     private final Configuration configuration;
-    private EPRuntime runtime;
-    private final int MAX_FAILED = 10;
     private int countFailed;
 
     public CoreRuntime(CoreCompiler coreCompiler) {
         this.coreCompiler = coreCompiler;
         configuration = Common.getConfiguration();
-        runtime = EPRuntimeProvider.getDefaultRuntime(configuration);
         countFailed = 0;
     }
 
@@ -93,7 +83,7 @@ public class CoreRuntime {
             System.out.println("SSHFailedLogMessage | " + dateStr + " from " + senderIpAddr + " on port " + port);
 
             // Send event SSHAlert
-            if (countFailed > MAX_FAILED)
+            if (countFailed > Common.FAILED_MAX)
                 rt.getEventService().sendEventBean((new SSHAlert(senderIpAddr, port, date)), "SSHAlert");
         });
 
@@ -103,7 +93,7 @@ public class CoreRuntime {
         statement2.addListener((newData, oldData, stmt, rt) -> {
             // Print alert message
             System.out.println("------------------------------------");
-            System.out.println("SSH Alert - Failed more than " + MAX_FAILED + " times");
+            System.out.println("SSH Alert - Failed more than " + Common.FAILED_MAX + " times");
             System.out.println("------------------------------------");
         });
 

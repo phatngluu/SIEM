@@ -3,6 +3,8 @@ package SIEM.util;
 import com.espertech.esper.common.client.configuration.Configuration;
 
 public class Common {
+    public static final int FAILED_MAX = 5;
+
     private static Configuration configuration;
 
     public static Configuration getConfiguration() {
