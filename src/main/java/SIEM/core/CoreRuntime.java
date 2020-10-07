@@ -27,7 +27,7 @@ public class CoreRuntime {
     private final CoreCompiler coreCompiler;
     private final Configuration configuration;
     private EPRuntime runtime;
-    private final int MAX_FAILED = 5;
+    private final int MAX_FAILED = 10;
     private int countFailed;
 
     public CoreRuntime(CoreCompiler coreCompiler) {

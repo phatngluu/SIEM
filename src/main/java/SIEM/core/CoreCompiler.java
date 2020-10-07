@@ -21,7 +21,7 @@ public class CoreCompiler {
     }
 
     public EPCompiled compile(String epl, Class eventType) {
-        System.out.println("Compiling...");
+        
         // Set new config and update to Common
         configuration = Common.getConfiguration();
         configuration.getCommon().addEventType(eventType);
