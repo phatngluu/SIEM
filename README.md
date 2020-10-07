@@ -1,3 +1,5 @@
+# Minimal SIEM systems for monitoring SSH log
+
 As raw event type “SSHLogMessage” is defined. 
 Detected failed logins should be events of type “SSHFailedLogMessage”. 
 If a defined threshold of failed logins is detected, an event of type “SSHAlert” should be raised.
