@@ -25,30 +25,39 @@ public class Main {
         CoreRuntime coreRuntime = new CoreRuntime(coreCompiler);
         EPRuntime runtime = coreRuntime.getEPRuntime();
 
-        ProcessBuilder builder = new ProcessBuilder("bash", "-c", "journalctl -u ssh.service -o json");
-        builder.redirectErrorStream(true);
-        Process process;
-        try {
-            process = builder.start();
-            InputStream is = process.getInputStream();
-            Scanner scanner = new Scanner(is);
-            while (scanner.hasNextLine()) {
-                try {
-                    JSONObject logObj = new JSONObject(scanner.nextLine());
-                    String logMsg = logObj.getString("MESSAGE");
-                    String epochtime = logObj.getString("__REALTIME_TIMESTAMP");
+        // Latest log epochtime
+        long latestLogEpochtime = -1;
 
-                    // Send event
-                    runtime.getEventService().sendEventBean(new SSHLogMessage(logMsg, epochtime), "SSHLogMessage");
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        while (true) {
+            ProcessBuilder builder = new ProcessBuilder("bash", "-c", "journalctl -u ssh.service -o json");
+            builder.redirectErrorStream(true);
+            Process process;
+            try {
+                process = builder.start();
+                InputStream is = process.getInputStream();
+                Scanner scanner = new Scanner(is);
+                while (scanner.hasNextLine()) {
+                    try {
+                        JSONObject logObj = new JSONObject(scanner.nextLine());
+                        String epochtime = logObj.getString("__REALTIME_TIMESTAMP");
+                        long logEpochtime = Long.valueOf(epochtime);
+                        if (latestLogEpochtime < logEpochtime){
+                            latestLogEpochtime = logEpochtime;
+                            String logMsg = logObj.getString("MESSAGE");
+                            // Send event
+                            runtime.getEventService().sendEventBean(new SSHLogMessage(logMsg, epochtime), "SSHLogMessage");
+                        }
+                        
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
 
-            scanner.close();
-        } catch (IOException e1) {
-            System.err.println("Cannot execute bash command.");
-            e1.printStackTrace();
+                scanner.close();
+            } catch (IOException e1) {
+                System.err.println("Cannot execute bash command.");
+                e1.printStackTrace();
+            }
         }
     }
 }
