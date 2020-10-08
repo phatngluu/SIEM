@@ -24,10 +24,10 @@ public class Main {
 
         stringBuilder = new StringBuilder();
         stringBuilder.append("@name('ssh-failed-log-message') select senderIpAddr, port, date from SSHFailedLogMessage;\n");
-        stringBuilder.append("@name('ssh-failed-total') select count(*) as failcount from SSHFailedLogMessage");
+        stringBuilder.append("@name('ssh-failed-total') select count(*) as failcount from SSHFailedLogMessage;");
         coreCompiler.compile(stringBuilder.toString(), SSHFailedLogMessage.class);
         
-        coreCompiler.compile("@name('ssh-alert') select alertMessage from SSHAlert", SSHAlert.class);
+        coreCompiler.compile("@name('ssh-alert') select alertMessage from SSHAlert;", SSHAlert.class);
 
         // Setting up run time
         CoreRuntime coreRuntime = new CoreRuntime(coreCompiler);
