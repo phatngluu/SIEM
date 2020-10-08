@@ -25,7 +25,6 @@ public class CoreCompiler {
         // Set new config and update to Common
         configuration = Common.getConfiguration();
         configuration.getCommon().addEventType(eventType);
-        // Common.updateConfiguration(configuration);
         CompilerArguments compilerArguments = new CompilerArguments(configuration);
 
         // Compile

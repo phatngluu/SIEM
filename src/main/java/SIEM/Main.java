@@ -30,7 +30,6 @@ public class Main {
 
         while (true) {
             ProcessBuilder builder = new ProcessBuilder("bash", "-c", "journalctl -u ssh.service -o json");
-            builder.redirectErrorStream(true);
             Process process;
             try {
                 process = builder.start();
