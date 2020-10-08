@@ -80,6 +80,17 @@ public class CoreRuntime {
                 rt.getEventService().sendEventBean((new SSHAlert()), "SSHAlert");
         });
 
+        // Set up statement SSHFailedLogMessage
+        EPStatement statement1A = runtime.getDeploymentService()
+                .getStatement(deploySSHFailedLogMessage.getDeploymentId(), "ssh-failed-total");
+        statement1A.addListener((newData, oldData, stmt, rt) -> {
+            int countFailed = Integer.valueOf((String) newData[0].get("failcount"));
+            System.out.println("Count: " + countFailed);
+            // Send event SSHAlert
+            if (countFailed > Common.FAILED_MAX)
+                rt.getEventService().sendEventBean((new SSHAlert()), "SSHAlert");
+        });
+
         // Set up statement SSHAlert
         EPStatement statement2 = runtime.getDeploymentService().getStatement(deploySSHAlert.getDeploymentId(),
                 "ssh-alert");
