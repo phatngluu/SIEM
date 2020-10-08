@@ -1,7 +1,6 @@
 package SIEM.event;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import SIEM.util.Common;
 
 public class SSHAlert {
     private String alertMessage;
@@ -14,9 +13,11 @@ public class SSHAlert {
         this.alertMessage = alertMessage;
     }
 
-    public SSHAlert(String senderIpAddr, int port, Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ssZZZZ");
-        String dateStr = sdf.format(date);
-        this.alertMessage = "SSHAlert - " + dateStr + " - Failed on port " + port + " from " + senderIpAddr;
+    public SSHAlert() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("------------------------------------\n");
+        stringBuilder.append("SSH Alert - Failed more than " + Common.FAILED_MAX + " times\n");
+        stringBuilder.append("------------------------------------");
+        this.alertMessage = stringBuilder.toString();
     }
 }

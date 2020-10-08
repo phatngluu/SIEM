@@ -13,10 +13,13 @@ import SIEM.util.*;
 
 public class CoreCompiler {
     private HashMap<Class, EPCompiled> epCompiledMap;
+    private HashMap<String, EPCompiled> epCompiledHashMap;
+
     private Configuration configuration;
 
     public CoreCompiler() {
         epCompiledMap = new HashMap<Class, EPCompiled>();
+        epCompiledHashMap = new HashMap<String, EPCompiled>();
         configuration = Common.getConfiguration();
     }
 
@@ -40,8 +43,31 @@ public class CoreCompiler {
         }
     }
 
+    public EPCompiled compileByName(String epl, String eventTypeName) {
+        
+        // Set new config and update to Common
+        configuration = Common.getConfiguration();
+        CompilerArguments compilerArguments = new CompilerArguments(configuration);
+
+        // Compile
+        EPCompiler compiler = EPCompilerProvider.getCompiler();
+        try {
+            EPCompiled epCompiled = compiler.compile(epl, compilerArguments);
+            epCompiledHashMap.put(eventTypeName, epCompiled);
+            return epCompiled;
+        } catch (EPCompileException ex) {
+            System.out.println("Cannot compile \"" + epl + "\" of event type " + eventTypeName);
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
     public EPCompiled getEpCompiled(Class eventType) {
         return epCompiledMap.get(eventType);
+    }
+
+    public EPCompiled getEpCompiledByName(String eventTypeName){
+        return epCompiledHashMap.get(eventTypeName);
     }
 
     public HashMap<Class, EPCompiled> getEpCompiledMap(){

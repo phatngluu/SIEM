@@ -13,7 +13,6 @@ import com.espertech.esper.runtime.client.EPStatement;
 
 import SIEM.event.SSHAlert;
 import SIEM.event.SSHFailedLogMessage;
-import SIEM.event.SSHLogMessage;
 import SIEM.util.Common;
 
 public class CoreRuntime {
@@ -37,7 +36,7 @@ public class CoreRuntime {
 
         try {
             deploySSHLogMessageDeploy = runtime.getDeploymentService()
-                    .deploy(coreCompiler.getEpCompiled(SSHLogMessage.class));
+                    .deploy(coreCompiler.getEpCompiledByName("SSHLogMessage"));
             deploySSHFailedLogMessage = runtime.getDeploymentService()
                     .deploy(coreCompiler.getEpCompiled(SSHFailedLogMessage.class));
             deploySSHAlert = runtime.getDeploymentService().deploy(coreCompiler.getEpCompiled(SSHAlert.class));
@@ -51,23 +50,17 @@ public class CoreRuntime {
         statement.addListener((newData, oldData, stmt, rt) -> {
             String message = (String) newData[0].get("message");
             String epochTimestampStr = (String) newData[0].get("epochTimestamp");
-            // Print SSHFailedLogMessage
-            // System.out.println("SSHLogMessage | Epoch: " + message + " - Message: " +
-            // message);
 
-            // Select failed message and send event
-            if (message.matches("Failed password for (.*) from (.*).(.*).(.*).(.*) port (.*) ssh2")) {
-                String[] slices = message.split(" ");
-                String senderIpAddr = slices[5];
-                int port = Integer.valueOf(slices[7]);
-                long epochTimestamp = Long.valueOf(epochTimestampStr.substring(0, 13));
-                Date date = Date.from(Instant.ofEpochMilli(epochTimestamp));
+            String[] slices = message.split(" ");
+            String senderIpAddr = slices[5];
+            int port = Integer.valueOf(slices[7]);
+            long epochTimestamp = Long.valueOf(epochTimestampStr.substring(0, 13));
+            Date date = Date.from(Instant.ofEpochMilli(epochTimestamp));
 
-                // Send event SSHFailedLogMessage
-                countFailed++;
-                rt.getEventService().sendEventBean((new SSHFailedLogMessage(senderIpAddr, port, date)),
-                        "SSHFailedLogMessage");
-            }
+            // Send event SSHFailedLogMessage
+            countFailed++;
+            rt.getEventService().sendEventBean((new SSHFailedLogMessage(senderIpAddr, port, date)),
+                    "SSHFailedLogMessage");
         });
 
         // Set up statement SSHFailedLogMessage
@@ -84,17 +77,15 @@ public class CoreRuntime {
 
             // Send event SSHAlert
             if (countFailed > Common.FAILED_MAX)
-                rt.getEventService().sendEventBean((new SSHAlert(senderIpAddr, port, date)), "SSHAlert");
+                rt.getEventService().sendEventBean((new SSHAlert()), "SSHAlert");
         });
 
         // Set up statement SSHAlert
         EPStatement statement2 = runtime.getDeploymentService().getStatement(deploySSHAlert.getDeploymentId(),
                 "ssh-alert");
         statement2.addListener((newData, oldData, stmt, rt) -> {
-            // Print alert message
-            System.out.println("------------------------------------");
-            System.out.println("SSH Alert - Failed more than " + Common.FAILED_MAX + " times");
-            System.out.println("------------------------------------");
+            // Print alert
+            System.out.println((String) newData[0].get("alertMessage"));
         });
 
         return runtime;
