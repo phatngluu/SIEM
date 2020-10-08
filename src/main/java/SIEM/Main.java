@@ -21,12 +21,7 @@ public class Main {
         stringBuilder.append("@JsonSchema(dynamic=true) @public @buseventtype create json schema SSHLogMessage(__REALTIME_TIMESTAMP string, MESSAGE string);\n");
         stringBuilder.append("@name('ssh-log-message') select __REALTIME_TIMESTAMP as epochTimestamp, MESSAGE as message from SSHLogMessage where MESSAGE LIKE 'Failed password for%';");
         coreCompiler.compileByName(stringBuilder.toString(), "SSHLogMessage");
-
-        stringBuilder = new StringBuilder();
-        stringBuilder.append("@name('ssh-failed-log-message') select senderIpAddr, port, date from SSHFailedLogMessage;\n");
-        stringBuilder.append("@name('ssh-failed-total') select count(*) as failcount from SSHFailedLogMessage;");
-        coreCompiler.compile(stringBuilder.toString(), SSHFailedLogMessage.class);
-        
+        coreCompiler.compile("@name('ssh-failed-log-message') select senderIpAddr, port, date from SSHFailedLogMessage;", SSHFailedLogMessage.class);
         coreCompiler.compile("@name('ssh-alert') select alertMessage from SSHAlert;", SSHAlert.class);
 
         // Setting up run time
